@@ -3,14 +3,19 @@ from bs4 import BeautifulSoup
 import random
 import string
 import os
-# from markitdown import MarkItDown
+import html2text as htmd
+from datetime import date
+import sys
+
+def generate_file_td():
+    return date.today().strftime("%d_%m")
 
 def generate_random_filename(extension="html", length=8):
     letters = string.ascii_lowercase
     random_filename = ''.join(random.choice(letters) for i in range(length)) + f".{extension}"
     return random_filename
 
-def getHtml(tweet_url):
+def getHtmlFromX(tweet_url):
     # URL base e parâmetros
     base_url = "https://threadnavigator.com/thread/"
 
@@ -40,6 +45,7 @@ def getHtml(tweet_url):
             # print(content)
             random_filename = generate_random_filename()
             with open(random_filename, "w", encoding="utf-8") as html_file:
+                html_file.write(f"<a href='{tweet_url}'>Link</a>")
                 html_file.write(str(content.prettify()))
             return random_filename
         else:
@@ -47,15 +53,36 @@ def getHtml(tweet_url):
     except requests.exceptions.RequestException as e:
         return -1
 
-# def htmlTomd(content_name):
-    # m = MarkItDown()
-    # res = m.convert(content)
-    # print(res.text_content)
+def saveMd(prefix="", ori=None, des=None):
+    with open(ori, "r") as f:
+        md = htmd.HTML2Text()
+        md.mark_code = True
+        h = f.read()
+        l = md.handle(h)
+        with open(des, "a") as m:
+            m.write(prefix)
+            m.write(str(l).replace("* * *", "\n"))
 
-tweet_url = "https://x.com/_OtakusBR/status/1859300831297761550"
-h = getHtml(tweet_url)
-print(h)
-# if h != -1:
-    # htmlTomd(h)
+def main():
+    # print(sys.argv)
+    if len(sys.argv) != 2:
+        print("Passar apenas o nome do txt")
+        return
+    md_name = generate_file_td() + ".md"
+    linhas = []
+    with open(sys.argv[1], "r") as t:
+        linhas = [linha.strip() for linha in t]
+    if len(linhas) <= 0:
+        print(f"Erro nas linhas de txt, {len(linhas)}")
+    for idx, i in enumerate(linhas):
+        h = getHtmlFromX(i)
+        saveMd(f"***\n# {idx}\n", h, md_name)
+        try: 
+            os.remove(h)
+        except e:
+            print(f"erro ao remover arquivo {h}")
+    print(f"Arquivo {md_name} criado")
 
 
+if __name__ == "__main__":
+    main()
