@@ -76,18 +76,29 @@ def getHtmlFromReddit(reddit_url):
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
         
-        # TODO: Pegar imagens
+        # TODO: Pegar videos
         all = soup.find("shreddit-post")
         _author = all.get("author", "Autor Desconhecido") if all else "Autor Desconhecido"
+        soup.find("div", {"slot": "credit-bar"}).decompose()
 
-        _title = soup.find("h1", {"slot":"title"})
-        title = _title.prettify() if _title else "<h1>Título Desconhecido</h1>"
-
-        _body = soup.find("div", {"slot": "text-body"})
-        body = _body.prettify() if _body else "<br>"
+        # Elimina elementos que só carregam mais tarde
+        for tag in soup.find_all(attrs={"loading": "lazy"}):
+            tag.decompose()  # Remove a tag do documento
+        seen_src = set()
+        # Ao pegar posts apenas com imagens ele repete as imagens por causa de navegabilidade...
+        # assim basicamente estou deixando apenas 1 das imagens
+        # TODO: Melhorar isso
+        # algum erro com links de imagens, eles ficam com \n no meio aparentemente
+        for img in soup.find_all("img"):
+            src = img.get("src")
+            if src in seen_src:
+                img.decompose()  # Remove as imagens duplicadas
+            else:
+                seen_src.add(src)  # Marca o src como visto 
         
 
-        h = title + f"<h1>{_author}</h1>\n" + body 
+        # h = title + f"<h1>{_author}</h1>\n" + body 
+        h = f"<h1>Autor: {_author}</h1>" + all.prettify()
        
         if all != None:
             return writeHtml(reddit_url, h)
@@ -109,7 +120,13 @@ def main():
     if len(linhas) <= 0:
         print(f"Erro nas linhas de txt, {len(linhas)}")
     for idx, i in enumerate(linhas):
-        h = getHtmlFromX(i)
+        h = ""
+        # TODO: Melhorar isso
+        if i.startswith("https://x.com"):
+            h = getHtmlFromX(i)
+        elif i.startswith("https://www.reddit.com"):
+            h = getHtmlFromReddit(i)
+
         saveMd(h, md_name, f"***\n# {idx}\n")
         try: 
             if isinstance(h, str):
@@ -121,9 +138,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    url = "https://www.reddit.com/r/memes/comments/1i2sltg/math_is_important/"
-    h = getHtmlFromReddit(url)
-    # print(h)
-    saveMd(h, "reddit.md", " ")
-
+    main() 
