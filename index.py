@@ -12,7 +12,7 @@ def generate_file_td():
 
 def generate_random_filename(extension="html", length=8):
     letters = string.ascii_lowercase
-    random_filename = ''.join(random.choice(letters) for i in range(length)) + f".{extension}"
+    random_filename = ''.join(random.choice(letters) for _ in range(length)) + f".{extension}"
     return random_filename
 
 def getHtmlFromX(tweet_url):
@@ -39,21 +39,18 @@ def getHtmlFromX(tweet_url):
         response.raise_for_status()  # Levanta exceções para códigos de erro HTTP
         
         soup = BeautifulSoup(response.text, "html.parser")
-
+        
+        # TODO: Pegar videos
         content =  soup.find("div", {"id": "thread"})
         if content:
             # print(content)
-            random_filename = generate_random_filename()
-            with open(random_filename, "w", encoding="utf-8") as html_file:
-                html_file.write(f"<a href='{tweet_url}'>Link</a>")
-                html_file.write(str(content.prettify()))
-            return random_filename
+            return writeHtml(tweet_url, str(content.prettify()))
         else:
             return -1
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         return -1
 
-def saveMd(prefix="", ori=None, des=None):
+def saveMd(ori, des, prefix=""):
     with open(ori, "r") as f:
         md = htmd.HTML2Text()
         md.mark_code = True
@@ -62,6 +59,43 @@ def saveMd(prefix="", ori=None, des=None):
         with open(des, "a") as m:
             m.write(prefix)
             m.write(str(l).replace("* * *", "\n"))
+
+def writeHtml(url, content):
+   random_filename = generate_random_filename()
+   with open(random_filename, "w", encoding="utf-8") as html_file:
+        html_file.write(f"<a href='{url}'>Link</a>\n")
+        html_file.write(content)
+    
+   return random_filename
+
+
+
+def getHtmlFromReddit(reddit_url):
+    try:
+        r = requests.get(reddit_url)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+        
+        # TODO: Pegar imagens
+        all = soup.find("shreddit-post")
+        _author = all.get("author", "Autor Desconhecido") if all else "Autor Desconhecido"
+
+        _title = soup.find("h1", {"slot":"title"})
+        title = _title.prettify() if _title else "<h1>Título Desconhecido</h1>"
+
+        _body = soup.find("div", {"slot": "text-body"})
+        body = _body.prettify() if _body else "<br>"
+        
+
+        h = title + f"<h1>{_author}</h1>\n" + body 
+       
+        if all != None:
+            return writeHtml(reddit_url, h)
+        else:
+            return -1
+    except requests.exceptions.RequestException:
+        return -2
+    
 
 def main():
     # print(sys.argv)
@@ -76,13 +110,20 @@ def main():
         print(f"Erro nas linhas de txt, {len(linhas)}")
     for idx, i in enumerate(linhas):
         h = getHtmlFromX(i)
-        saveMd(f"***\n# {idx}\n", h, md_name)
+        saveMd(h, md_name, f"***\n# {idx}\n")
         try: 
-            os.remove(h)
-        except e:
+            if isinstance(h, str):
+                os.remove(h)
+        except:
             print(f"erro ao remover arquivo {h}")
     print(f"Arquivo {md_name} criado")
 
 
+
 if __name__ == "__main__":
-    main()
+    # main()
+    url = "https://www.reddit.com/r/memes/comments/1i2sltg/math_is_important/"
+    h = getHtmlFromReddit(url)
+    # print(h)
+    saveMd(h, "reddit.md", " ")
+
