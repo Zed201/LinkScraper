@@ -115,18 +115,18 @@ def getHtmlFromMedium(url):
         soup = BeautifulSoup(r.text, "html.parser")
         # TODO: Criar ifs
         title_ = soup.find("h1", {"data-testid": "storyTitle"})
-        title = title_.prettify() if title_ else "Sem titulo"
+        title = title_.prettify() if title_ else "<h1>Sem titulo</h1>"
 
         subtitle_ = soup.find("h2", {"class": "pw-subtitle-paragraph"})
-        subtitle = subtitle_.prettify() if subtitle_ else "Sem subtitulo"
+        subtitle = subtitle_.prettify() if subtitle_ else "<h3>Sem subtitulo</h3>"
 
         author_ = soup.find("a", {"data-testid": "authorName"})
-        author = author_.prettify() if author_ else "Autor Desconhecido"
+        author = author_.prettify() if author_ else "<h3>Autor Desconhecido</h3>"
 
         # text_ = soup.find_all("p", {"class": "pw-post-body-paragraph"})
         # text = " ".join([element.get_text(strip=True) for element in text_])
         #TODO: Melhorar
-        f = lambda tag: "data-selectable-paragraph" in tag.attrs or tag.name == "pre" or "pw-post-body-paragraph" in tag.get("class", []) or "picture" == tag.name or "figcaption" == tag.name or "h1" == tag.name
+        f = lambda tag: "data-selectable-paragraph" in tag.attrs or tag.name == "pre" or "pw-post-body-paragraph" in tag.get("class", []) or "picture" == tag.name or "figcaption" == tag.name or "h1" == tag.name or tag.name == "ul"
         text_ = soup.find_all(f)
         text = " ".join([str(element) for element in text_])
         r = title + subtitle + author + text
@@ -181,7 +181,8 @@ def main():
 
 
 if __name__ == "__main__":
-    # print(getHtmlFromMedium("https://tjtanjin.medium.com/how-to-build-a-telegram-bot-a-beginners-step-by-step-guide-c671ce027c55"))
+    h = getHtmlFromMedium("https://tjtanjin.medium.com/how-to-build-a-telegram-bot-a-beginners-step-by-step-guide-c671ce027c55")
+    saveMd(h, "11.md", "")
     # print(getHtmlFromMedium("https://medium.com/codex/why-ive-abandoned-ides-8967d12ecde7"))
-    print(getHtmlFromMedium("https://medium.com/@edandresvan/a-brief-introduction-about-rust-sqlx-5d3cea2e8544"))
+    # print(getHtmlFromMedium("https://medium.com/@edandresvan/a-brief-introduction-about-rust-sqlx-5d3cea2e8544"))
     # main() 
