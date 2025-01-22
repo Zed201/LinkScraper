@@ -136,7 +136,23 @@ def getHtmlFromMedium(url):
         return -1
 
 def getHtmlFromDevTo(url):
-    return 1
+    try:
+        r = requests.get(url)
+        r.raise_for_status()
+
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        header_ = soup.find("div", {"class": "crayons-article__header__meta"})
+        # pegar apenas o titulo
+        header = header_.find("h1").prettify() if header_ else "<h1>Sem Titulo</h1>"
+        
+        main_ = soup.find("div", {"class": "crayons-article__main"})
+        main = main_.prettify() if main_ else "<h1>Sem main</h1>"
+
+        h = header + main 
+        return writeHtml(url, h)
+    except requests.exceptions.RequestException:
+        return -1
 
 def main():
     # if len(sys.argv) != 2:
@@ -181,8 +197,7 @@ def main():
 
 
 if __name__ == "__main__":
-    h = getHtmlFromMedium("https://tjtanjin.medium.com/how-to-build-a-telegram-bot-a-beginners-step-by-step-guide-c671ce027c55")
-    saveMd(h, "11.md", "")
-    # print(getHtmlFromMedium("https://medium.com/codex/why-ive-abandoned-ides-8967d12ecde7"))
-    # print(getHtmlFromMedium("https://medium.com/@edandresvan/a-brief-introduction-about-rust-sqlx-5d3cea2e8544"))
+    # print(getHtmlFromDevTo("https://dev.to/devteam/join-us-for-the-agentai-challenge-10000-in-prizes-dh9"))
+    h = getHtmlFromDevTo("https://dev.to/adamgolan/why-you-should-prefer-map-over-object-in-javascript-327e")
+    saveMd(h, "11.md", " ")
     # main() 
