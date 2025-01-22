@@ -107,35 +107,81 @@ def getHtmlFromReddit(reddit_url):
     except requests.exceptions.RequestException:
         return -2
     
+def getHtmlFromMedium(url):
+    try:
+        r = requests.get(url)
+        r.raise_for_status()
+
+        soup = BeautifulSoup(r.text, "html.parser")
+        # TODO: Criar ifs
+        title_ = soup.find("h1", {"data-testid": "storyTitle"})
+        title = title_.prettify() if title_ else "Sem titulo"
+
+        subtitle_ = soup.find("h2", {"class": "pw-subtitle-paragraph"})
+        subtitle = subtitle_.prettify() if subtitle_ else "Sem subtitulo"
+
+        author_ = soup.find("a", {"data-testid": "authorName"})
+        author = author_.prettify() if author_ else "Autor Desconhecido"
+
+        # text_ = soup.find_all("p", {"class": "pw-post-body-paragraph"})
+        # text = " ".join([element.get_text(strip=True) for element in text_])
+        #TODO: Melhorar
+        f = lambda tag: "data-selectable-paragraph" in tag.attrs or tag.name == "pre" or "pw-post-body-paragraph" in tag.get("class", []) or "picture" == tag.name or "figcaption" == tag.name or "h1" == tag.name
+        text_ = soup.find_all(f)
+        text = " ".join([str(element) for element in text_])
+        r = title + subtitle + author + text
+        return writeHtml(url, r)
+
+    except requests.exceptions.RequestException:
+        return -1
+
+def getHtmlFromDevTo(url):
+    return 1
 
 def main():
-    # print(sys.argv)
-    if len(sys.argv) != 2:
-        print("Passar apenas o nome do txt")
-        return
+    # if len(sys.argv) != 2:
+    #     print("Passar apenas o nome do txt")
+    #     return
     md_name = generate_file_td() + ".md"
+
     linhas = []
+
     with open(sys.argv[1], "r") as t:
         linhas = [linha.strip() for linha in t]
+
     if len(linhas) <= 0:
         print(f"Erro nas linhas de txt, {len(linhas)}")
+
     for idx, i in enumerate(linhas):
         h = ""
-        # TODO: Melhorar isso
-        if i.startswith("https://x.com"):
+        # TODO: nada optimizado mas funciona no momento e nao precisa ser extremamento eficient
+
+        if "x.com" in i: 
             h = getHtmlFromX(i)
-        elif i.startswith("https://www.reddit.com"):
+
+        elif "reddit.com" in i: 
             h = getHtmlFromReddit(i)
 
+        elif "medium.com" in i:
+            h = getHtmlFromMedium(i)
+
+        elif "dev.to" in i:
+            h = getHtmlFromDevTo(i)
+
         saveMd(h, md_name, f"***\n# {idx}\n")
+
         try: 
             if isinstance(h, str):
                 os.remove(h)
         except:
             print(f"erro ao remover arquivo {h}")
+
     print(f"Arquivo {md_name} criado")
 
 
 
 if __name__ == "__main__":
-    main() 
+    # print(getHtmlFromMedium("https://tjtanjin.medium.com/how-to-build-a-telegram-bot-a-beginners-step-by-step-guide-c671ce027c55"))
+    # print(getHtmlFromMedium("https://medium.com/codex/why-ive-abandoned-ides-8967d12ecde7"))
+    print(getHtmlFromMedium("https://medium.com/@edandresvan/a-brief-introduction-about-rust-sqlx-5d3cea2e8544"))
+    # main() 
