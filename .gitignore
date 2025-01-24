@@ -15,4 +15,5 @@ wheels/
 
 *.md
 !README.md
+!req.txt
 
