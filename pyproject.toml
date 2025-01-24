@@ -7,5 +7,8 @@ requires-python = ">=3.8"
 dependencies = [
     "bs4>=0.0.2",
     "html2text>=2024.2.26",
+    "pytelegrambotapi>=4.23.0",
+    "python-dotenv>=1.0.1",
     "requests>=2.32.3",
+    "supabase>=2.6.0",
 ]

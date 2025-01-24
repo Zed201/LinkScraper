@@ -154,10 +154,15 @@ def getHtmlFromDevTo(url):
     except requests.exceptions.RequestException:
         return -1
 
+
+sites_prefix = ["x.com", "reddit.com", "dev.to", "medium.com"]
+sites_handler = [getHtmlFromX, getHtmlFromReddit, getHtmlFromDevTo, getHtmlFromMedium]
+
 def main():
-    # if len(sys.argv) != 2:
-    #     print("Passar apenas o nome do txt")
-    #     return
+    if len(sys.argv) != 2:
+        print("Passar apenas o nome do txt")
+        return
+
     md_name = generate_file_td() + ".md"
 
     linhas = []
@@ -168,21 +173,22 @@ def main():
     if len(linhas) <= 0:
         print(f"Erro nas linhas de txt, {len(linhas)}")
 
-    for idx, i in enumerate(linhas):
+    processList(linhas, md_name)    
+    print(f"Arquivo {md_name} criado")
+
+
+
+def processList(lista, md_name):
+    for idx, i in enumerate(lista):
         h = ""
         # TODO: nada optimizado mas funciona no momento e nao precisa ser extremamento eficient
 
-        if "x.com" in i: 
-            h = getHtmlFromX(i)
+        for jdx, j in enumerate(sites_prefix):
+            if j in i:
+                h = sites_handler[jdx](i)
 
-        elif "reddit.com" in i: 
-            h = getHtmlFromReddit(i)
-
-        elif "medium.com" in i:
-            h = getHtmlFromMedium(i)
-
-        elif "dev.to" in i:
-            h = getHtmlFromDevTo(i)
+        if len(h) == 0:
+            continue
 
         saveMd(h, md_name, f"***\n# {idx}\n")
 
@@ -192,12 +198,7 @@ def main():
         except:
             print(f"erro ao remover arquivo {h}")
 
-    print(f"Arquivo {md_name} criado")
 
 
-
-if __name__ == "__main__":
-    # print(getHtmlFromDevTo("https://dev.to/devteam/join-us-for-the-agentai-challenge-10000-in-prizes-dh9"))
-    h = getHtmlFromDevTo("https://dev.to/adamgolan/why-you-should-prefer-map-over-object-in-javascript-327e")
-    saveMd(h, "11.md", " ")
-    # main() 
+if __name__ == "__main__": 
+    main() 
