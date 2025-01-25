@@ -66,14 +66,18 @@ def getSoap(url="", params={}, headers={}):
 
 
 def saveMd(ori, des, prefix=""):
-    with open(ori, "r") as f:
-        md = htmd.HTML2Text()
-        md.mark_code = True
-        h = f.read()
-        l = md.handle(h)
-        with open(des, "a") as m:
-            m.write(prefix)
-            m.write(str(l).replace("* * *", "\n"))
+    print(ori)
+    try:
+        with open(ori, "r") as f:
+            md = htmd.HTML2Text()
+            md.mark_code = True
+            h = f.read()
+            l = md.handle(h)
+            with open(des, "a") as m:
+                m.write(prefix)
+                m.write(str(l).replace("* * *", "\n"))
+    except:
+        return -1
 
 
 def writeHtml(url, content):
@@ -207,13 +211,12 @@ def processList(lista, md_name):
         for jdx, j in enumerate(sites_prefix):
             if j in i:
                 h = sites_handler[jdx](i)
-                saveMd(h, md_name, f"***\n# {idx}\n")
-
-                try:
-                    if isinstance(h, str):
-                        os.remove(h)
-                except Exception:
-                    print(f"erro ao remover arquivo {h}")
+                if saveMd(h, md_name, f"***\n# {idx}\n") != -1:
+                    try:
+                        if isinstance(h, str):
+                            os.remove(h)
+                    except Exception:
+                        print(f"erro ao remover arquivo {h}")
 
 
 if __name__ == "__main__":
