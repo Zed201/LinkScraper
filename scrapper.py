@@ -211,6 +211,7 @@ def processList(lista, md_name):
         for jdx, j in enumerate(sites_prefix):
             if j in i:
                 h = sites_handler[jdx](i)
+                print(f"h={h}")
                 if saveMd(h, md_name, f"***\n# {idx}\n") != -1:
                     try:
                         if isinstance(h, str):
