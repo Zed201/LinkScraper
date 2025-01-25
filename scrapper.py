@@ -45,6 +45,7 @@ def getHtmlFromX(tweet_url):
 
     # TODO: Pegar videos
     content = soup.find("div", {"id": "thread"})
+    print(content.text)
     if content:
         return writeHtml(tweet_url, str(content.prettify()))
     else:
