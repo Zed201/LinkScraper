@@ -45,7 +45,6 @@ def getHtmlFromX(tweet_url):
 
     # TODO: Pegar videos
     content = soup.find("div", {"id": "thread"})
-    print(content.text)
     if content:
         return writeHtml(tweet_url, str(content.prettify()))
     else:
@@ -56,7 +55,8 @@ def getSoap(url="", params={}, headers={}):
     try:
         r = requests.get(url, headers=headers, params=params, timeout=10)
         r.raise_for_status()
-
+        print(r)
+     
         soup = BeautifulSoup(r.text, "html.parser")
         if soup:
             return soup
