@@ -1,0 +1,12 @@
+.venv
+
+*.html
+*.txt
+
+*.md
+
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
